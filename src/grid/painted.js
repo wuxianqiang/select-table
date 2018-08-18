@@ -6,23 +6,30 @@ export default {
         offcheck.src = require('./offcheck.png')
         const more = new Image()
         more.src = require('./more.png')
+        const site = new Image()
+        site.src = require('./site.png')
         return {
-            headerColor: '#333333',
+            headerColor: '#333333', // 表头文字颜色
             textColor: '#666666',
-            borderColor: '#d4d4d4',
+            borderColor: '#d4d4d4', // 表格边框颜色
             white: '#ffffff',
             shadowColor: 'rgba(0,0,0,0.2)',
             fillColor: '#f9f9f9',
-            headFillColor: '#f2f2f2',
+            headFillColor: '#f2f2f2', // 表头背景颜色
             buttonColor: '#20a0ff',
-            focusColor: '#4285f4',
-            selectColor: '#6bc9ff',
-            selectAreaColor: 'rgba(160, 195, 255, 0.2)',
-            selectRowColor: '#f6f6f6',
+            focusColor: '#00C292', // 焦点的边框颜色
+            selectColor: '#6bc9ff', // 选择区域的边框颜色
+            selectAreaColor: 'rgba(160, 195, 255, 0.2)', // 选择区域的背景颜色
+            selectRowColor: 'rgba(34, 172, 56, 0.13)', // 选择区域的行颜色
             dotColor: '#74d337',
+            idleColor: '#FFFFFF', // 空闲
+            inquiryColor: '#C4EBFF', // 询价
+            reviewColor: '#FFE8BA', // 待审核
+            auditedColor: '#F9DDDE', // 已审核
             oncheck,
             offcheck,
             more,
+            site,
             words: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
         }
     },
@@ -96,21 +103,24 @@ export default {
 
             ctx.fillStyle = this.headerColor// text color
             ctx.textAlign = 'center'
+            // ctx.setLineDash([10, 2])
             ctx.lineWidth = 1
             ctx.strokeStyle = this.borderColor
             ctx.textBaseline = 'middle'
             ctx.save()
 
-            this.paintSelectRow(ctx, displayRows)
+            // this.paintSelectRow(ctx, displayRows) // 绘制选中的行
 
             this.paintLine(ctx, displayRows, displayColumns)
 
             this.paintBody(ctx, displayCells)
 
             if (this.isSelect) {
+                // 绘制区域
                 this.paintSelect(ctx, this.selectArea)
             }
             if (this.isFocus) {
+                // 绘制焦点
                 this.paintFocus(ctx, this.focusCell)
             }
 
@@ -123,7 +133,7 @@ export default {
                 this.paintMultiSelect(ctx, this.multiSelect)
             }
 
-            this.paintSerial(ctx, displayRows)
+            this.paintSerial(ctx, displayRows) // 绘制序列号
 
             this.paintNo(ctx)
 
@@ -140,6 +150,7 @@ export default {
          * @param {*} displayRows
          */
         paintSelectRow(ctx, displayRows) {//eslint-disable-line
+            // 绘制选中的当前行
             const { p, i, maxPoint, rowFocus } = this
             for (const item of displayRows) {
                 if (rowFocus && rowFocus.cellY === item.y) {
@@ -272,6 +283,7 @@ export default {
                 ctx.lineTo(p(area.x + area.width), p(area.y))
                 ctx.lineTo(p(area.x + area.width), p(area.y + area.height))
                 ctx.lineTo(p(area.x), p(area.y + area.height))
+                // ctx.drawImage(this.site, p(area.x), p(area.y), area.width, area.height)
                 ctx.closePath()
                 ctx.fillStyle = this.selectAreaColor
                 ctx.fill()
@@ -302,13 +314,19 @@ export default {
          * @param {*} ctx
          * @param {*} cell
          */
-        paintFocus(ctx, cell) {
+        paintFocus(ctx) {
+            // 这是单击操作的选中
             const { i, originPoint, maxPoint, toolbarHeight } = this
-            if (cell.x + cell.width > originPoint.x && cell.y + cell.height > originPoint.y + toolbarHeight && cell.x < maxPoint.x && cell.y < maxPoint.y) {
-                ctx.lineWidth = 2
-                ctx.strokeStyle = this.focusColor
-                ctx.strokeRect(i(cell.x), i(cell.y), cell.width, cell.height)
-            }
+            this.selectSiteList.forEach(cell => {
+                if (cell.x + cell.width > originPoint.x && cell.y + cell.height > originPoint.y + toolbarHeight && cell.x < maxPoint.x && cell.y < maxPoint.y) {
+                    ctx.lineWidth = 2
+                    ctx.strokeStyle = this.focusColor
+                    // ctx.strokeRect(i(cell.x), i(cell.y), cell.width, cell.height)
+                    ctx.fillStyle = this.idleColor
+                    ctx.fillRect(i(cell.x)+1, i(cell.y)+1, cell.width-1, cell.height-1)
+                    ctx.drawImage(this.site, i(cell.x)+18, i(cell.y)+18, 18, 12)
+                }
+            })
         },
         /**
          * 绘制表头

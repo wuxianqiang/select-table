@@ -56,6 +56,7 @@ export default {
                     this.isDown = true
                     this.hideInput()
                     this.selectArea = null
+                    this.activeArea = [] // 清空选择的点
                     this.isSelect = false
                     this.multiSelect = null
                     this.isMultiSelect = false
@@ -85,7 +86,14 @@ export default {
                                     this.rePainted()
                                 }
                             } else {
+                                // 处理点击时候的选中
                                 this.focusCell = cell
+                                let hasSelect = this.selectSiteList.findIndex(item => item.cellPosition === cell.cellPosition)
+                                if (hasSelect < 0) {
+                                    this.selectSiteList.push(cell)
+                                } else {
+                                    this.selectSiteList.splice(hasSelect, 1)
+                                }
                                 this.paintFocusCell(cell)
                                 this.$emit('focus', cell.rowData)
                                 this.calculateRate([cell.rowData])
@@ -147,7 +155,9 @@ export default {
                     }
                 } else {
                     const cell = this.getCellAt(eX, eY)
+                    this.paintFocusCell(cell)
                     if (cell) {
+                        // 处理四个方向的框选
                         if (cell.x >= x && cell.y >= y) {
                             this.selectArea = { x, y, width: (cell.x - x) + cell.width, height: (cell.y - y) + cell.height, cellIndex, rowIndex, offset: { ...this.offset } }
                         } else if (cell.x >= x && cell.y <= y) {
@@ -157,7 +167,17 @@ export default {
                         } else if (cell.x <= x && cell.y >= y) {
                             this.selectArea = { x: cell.x, y, width: (x - cell.x) + width, height: (cell.y - y) + cell.height, rowIndex, cellIndex: cell.cellIndex, offset: { ...this.offset } }
                         }
-                        this.selectArea.rowCount = Math.abs(cell.rowIndex - rowIndex) + 1
+                        let rowCount = Math.abs(cell.rowIndex - rowIndex) + 1
+                        let cellCount = Math.abs(cell.cellIndex - cellIndex) + 1
+                        let activeArea = []
+                        for (let i = 0; i < rowCount; i++) {
+                            for (let k = 0; k < cellCount; k++) {
+                                activeArea.push({x: eX + i * 50, y: eY + k * 50})
+                            }
+                        }
+                        this.activeArea = activeArea
+                        this.selectArea.rowCount = rowCount
+                        this.selectArea.cellCount = cellCount
                         this.isSelect = true
                         this.rePainted()
                     }
@@ -198,6 +218,12 @@ export default {
             }
         },
         handleMouseup() {
+            let list = []
+            this.activeArea.forEach(item => {
+                console.log(item)
+                list.push(this.getCellAt(item.x, item.y))
+            })
+            console.log(list)
             this.isDown = false
             this.horizontalBar.move = false
             this.verticalBar.move = false
@@ -329,7 +355,7 @@ export default {
                         y: this.toolbarHeight + this.rowHeight + this.offset.y,
                     }
                     this.isFocus = true
-                    this.rePainted()
+                    this.rePainted() // 重新绘制
                 }
 
                 const button = this.getButtonAt(x, y)
@@ -593,6 +619,7 @@ export default {
             }
         },
         paintFocusCell(cell) {
+            // 单击选择处理
             if (cell) {
                 this.rowFocus = {
                     cellX: cell.x,
@@ -605,6 +632,9 @@ export default {
                 this.$refs.input.innerHTML = ''
                 this.focusInput()
             }
+        },
+        paintFocusCellArea(Area) {
+            // 区域选择处理
         },
         focusInput() {
             setTimeout(() => {

@@ -1,7 +1,7 @@
 <template>
     <div ref="grid" class="excel-table" :style="`height:${height+2}px;`" @paste="doPaste">
         <button v-if="showBatchEditBtn" class="select-tip-btn" :style="batchEditStyle" @click="handleDoRegionExpress">批量编辑</button>
-        <div v-if="showToolbar" class="toolbar">
+        <div v-if="false" class="toolbar">
             <div class="toolbar__focus" :style="'width:'+(serialWidth+(showCheckbox?checkboxWidth:0)+1)+'px;'">
                 {{focusCell?focusCell.cellPosition:''}}
             </div>
@@ -152,6 +152,8 @@ export default {
             fxTip: '',
             sumRate: 0,
             rate: 0,
+            selectSiteList: [],
+            activeArea: []
         }
     },
     computed: {
@@ -189,7 +191,7 @@ export default {
         focusCell: {
             handler(value) {
                 if (value) {
-                    this.fxContent = value.content
+                    // this.fxContent = value.content
                 }
             },
             deep: true,

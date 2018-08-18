@@ -47,6 +47,7 @@ export default {
             if (y > this.toolbarHeight - this.rowHeight && y < this.toolbarHeight) {
                 for (const column of this.displayColumns) {
                     if (x > column.x && x < column.x + column.width) {
+                        console.log(Object.assign({}, column))
                         return Object.assign({}, column)
                     }
                 }

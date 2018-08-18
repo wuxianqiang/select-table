@@ -1,10 +1,10 @@
 export default {
     data() {
-        const rowHeight = 30
-        const serialWidth = 70
+        const rowHeight = 50
+        const serialWidth = 70 // 序号宽度
         const checkboxWidth = 30
         const scrollerWidth = 20
-        const height = this.leftHeight ? window.innerHeight - this.leftHeight : 500
+        const height = this.leftHeight ? 850 - this.leftHeight : 500
         let originPointX = serialWidth
         if (this.showCheckbox) {
             originPointX += checkboxWidth
@@ -64,7 +64,7 @@ export default {
     mounted() {
         this.width = this.$refs.grid.offsetWidth - 2
 
-        this.height = this.leftHeight ? window.innerHeight - this.leftHeight : 500
+        this.height = this.leftHeight ? this.$refs.grid.offsetHeight - this.leftHeight : 500
         this.maxPoint.y = this.height - this.scrollerWidth
 
         this.bodyWidth = this.originPoint.x
@@ -222,7 +222,7 @@ export default {
         initSize() {
             if (this.$refs.grid) {
                 this.width = this.$refs.grid.offsetWidth - 2
-                this.height = this.leftHeight ? window.innerHeight - this.leftHeight : 500
+                this.height = this.leftHeight ? this.$refs.grid.offsetHeight - this.leftHeight : 500
 
                 if (this.showCheckbox) {
                     if (this.initSelected) {
@@ -486,6 +486,7 @@ export default {
             return cell
         },
         getDisplayColumns() {
+            // 获取显示的列
             const { offset: { x }, originPoint, maxPoint, allColumns, fillWidth } = this
             const temp = []
             let startX = originPoint.x + x
@@ -507,20 +508,28 @@ export default {
        * 初始化显示行列
        */
         initDisplayItems() {
-            const displayColumns = this.getDisplayColumns()
-            const displayRows = this.getDisplayRows()
-            const displayCells = this.getDisplayCells(displayRows, displayColumns)
-            const displayFixedCells = this.getDisplayFixedCells(displayRows)
-            if (this.focusCell) {
-                this.freshFocusCell(this.focusCell.rowIndex, this.focusCell.cellIndex, displayRows, displayColumns)
-                const lastOffset = this.focusCell.offset
+            const displayColumns = this.getDisplayColumns() // 列信息
+            const displayRows = this.getDisplayRows() // 行信息（包括每个格子的信息）
+            const displayCells = this.getDisplayCells(displayRows, displayColumns) // 单元格信息
+            const displayFixedCells = this.getDisplayFixedCells(displayRows) // 显示的信息
+            if (this.selectSiteList.length) {
+                // this.focusCell 当前选择的坐标点
+                // this.freshFocusCell(this.focusCell.rowIndex, this.focusCell.cellIndex, displayRows, displayColumns) // 设置选中单元格的宽高
+                const lastOffset = this.selectSiteList[this.selectSiteList.length - 1].offset // 处理滚动条滚动产生的偏移
                 if (lastOffset.x !== this.offset.x || lastOffset.y !== this.offset.y) {
-                    this.focusCell.x -= lastOffset.x - this.offset.x
-                    this.focusCell.y -= lastOffset.y - this.offset.y
-                    this.focusCell.offset = { ...this.offset }
+                    // 滚动重新计算
+                    this.selectSiteList.forEach(focusCell => {
+                        focusCell.x -= lastOffset.x - this.offset.x
+                        focusCell.y -= lastOffset.y - this.offset.y
+                        focusCell.offset = { ...this.offset }
+                    })
+                    // this.focusCell.x -= lastOffset.x - this.offset.x
+                    // this.focusCell.y -= lastOffset.y - this.offset.y
+                    // this.focusCell.offset = { ...this.offset }
                 }
             }
             if (this.selectArea) {
+                // this.selectArea 当前的选择区域
                 const lastOffset = this.selectArea.offset
                 this.selectArea.x -= lastOffset.x - this.offset.x
                 this.selectArea.y -= lastOffset.y - this.offset.y
@@ -553,6 +562,7 @@ export default {
             return { displayColumns, displayRows, displayCells, displayFixedCells }
         },
         getDisplayRows() {
+            // 获取显示的行
             const { offset: { y }, originPoint, maxPoint, allRows, toolbarHeight } = this
             const temp = []
             let startY = originPoint.y + y + toolbarHeight
@@ -570,6 +580,7 @@ export default {
             return temp
         },
         getDisplayCells(displayRows, displayColumns) {
+            // 获取每一个单元格中的具体信息
             const temp = []
             const { allCells, fillWidth, setCellRenderText } = this
             for (const row of displayRows) {
@@ -609,6 +620,7 @@ export default {
             return temp
         },
         freshFocusCell(rowIndex, cellIndex, displayRows, displayColumns) {
+            // rowIndex 行坐标索引, cellIndex 列坐标索引, displayRows 行信息, displayColumns 列信息 设置焦点表格的宽高
             const firstRowIndex = displayRows[0].rowIndex
             const lastRowIndex = displayRows[displayRows.length - 1].rowIndex
             if (rowIndex >= firstRowIndex && rowIndex <= lastRowIndex) {
